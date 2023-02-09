@@ -1,0 +1,6 @@
+- name: OWASP Dependency Track check
+  uses: Quobis/action-owasp-dependecy-track-check@v1.3
+  with:
+    url: https://agile-dev.de/
+    key: SECRET_OWASP_DT_KEY
+    language: java
