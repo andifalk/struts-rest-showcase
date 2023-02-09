@@ -3,7 +3,11 @@
 name: CI
 
 # Controls when the action will run. 
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   # workflow_dispatch:
@@ -17,19 +21,26 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2 
-      
-      # Generates a BoM and uploads it to OWASP Dependency Track
-      - name: Generates BoM and upload to OWASP DTrack
-        id: riskscoreFromDT
-        uses:  Quobis/action-owasp-dependecy-track-check@main
+      - uses: actions/checkout@v3      
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
-          url: 'https://agile-dev.de/'
-          key: '${{ secrets.SECRET_OWASP_DT_KEY }}'
-          language: 'java'
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+      - name: Update dependency graph
+        uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+
+      - name: Upload BOM to OWASP Dependency Track 
+        uses: DependencyTrack/gh-upload-sbom@v1.0.0
+        with:
+          serverhostname: 'agile-dev.de'
+          apikey: ${{ secrets.SECRET_OWASP_DT_KEY }}
+          projectname: 'Vulnerable Struts Rest Api'
+          projectversion: 'master'
+          autocreate: 'true'
       
-      # Show the risk score output 
-      - name: Get the output time
-        run: echo "The risk score of the project is ${{ steps.riskscoreFromDT.outputs.riskscore }}"
-        
