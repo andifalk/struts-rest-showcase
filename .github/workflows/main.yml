@@ -38,4 +38,5 @@ jobs:
           projectname: 'Vulnerable Struts Rest Api'
           projectversion: 'master'
           autocreate: 'true'
+          bomfilename: 'target/bom.xml'
       
